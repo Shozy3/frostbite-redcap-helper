@@ -205,7 +205,33 @@ Worker** alongside it:
 
 ## 5. Component diagram
 
-![Architecture of the Frostbite REDCap Helper](images/architecture.png)
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, -apple-system, Roboto, Helvetica, Arial, sans-serif","fontSize":"15px","lineColor":"#7c93a8","primaryTextColor":"#0f2438"}}}%%
+flowchart LR
+  U(["🧑‍⚕️ Clinician"]):::user
+  subgraph BROWSER["💻 Your browser"]
+    APP["Web App — redcaphelper.haddeya.com<br/>Chart Audit · Hennepin · Iloprost<br/>🔒 encrypts before anything leaves"]:::app
+  end
+  subgraph CF["☁️ Cloudflare"]
+    SAVE["Pages Function<br/>/api/save"]:::save
+    KV[("Workers KV<br/>ciphertext only")]:::kv
+    BRIDGE["Optional bridge<br/>/api/code"]:::save
+  end
+  RC["✅ REDCap survey<br/>system of record"]:::rc
+  U --> APP
+  APP -->|"opens pre-populated survey"| RC
+  APP -->|"encrypted blob<br/>{ct, iv, dtok}"| SAVE
+  SAVE --> KV
+  APP -.->|"optional"| BRIDGE
+  BRIDGE -.->|"Save & Return code"| RC
+  classDef user fill:#1769aa,stroke:#0f4c75,color:#ffffff,stroke-width:1px;
+  classDef app fill:#e9f2f9,stroke:#1769aa,stroke-width:2px,color:#0f2438;
+  classDef save fill:#fdf2e8,stroke:#e8791f,stroke-width:1.5px,color:#0f2438;
+  classDef kv fill:#ffffff,stroke:#e8791f,stroke-width:1.5px,color:#0f2438;
+  classDef rc fill:#e7f4ed,stroke:#178a5a,stroke-width:2px,color:#0f2438;
+  style BROWSER fill:#eef5fb,stroke:#bcd8ec,color:#1769aa;
+  style CF fill:#fdf3ea,stroke:#f4c69c,color:#c8641a;
+```
 
 ## 6. Security notes
 

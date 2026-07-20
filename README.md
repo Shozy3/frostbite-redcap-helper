@@ -37,7 +37,22 @@ When you're done, the app opens the **real REDCap survey pre-populated** in a ne
 
 ### The user's journey
 
-![How a clinician moves through the tool, from opening the app to submitting in REDCap](docs/images/user-workflow.png)
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, -apple-system, Roboto, Helvetica, Arial, sans-serif","fontSize":"15px","lineColor":"#7c93a8","primaryTextColor":"#0f2438"}}}%%
+flowchart LR
+  S1["1 · Open the app<br/>redcaphelper.haddeya.com"]:::step
+  S2["2 · Unlock<br/>enter passphrase"]:::step
+  S3["3 · Pick a tool<br/>Chart Audit · Hennepin · Iloprost"]:::step
+  S4["4 · Enter data<br/>live progress · review missing"]:::step
+  S5["5 · Open REDCap<br/>pre-populated, new tab"]:::step
+  S6["6 · Review &amp; submit<br/>in REDCap ✅"]:::done
+  OPT["💾 Optional · Save &amp; get code ⇄ Resume<br/>encrypted, on any computer"]:::opt
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6
+  S4 -.-> OPT
+  classDef step fill:#e9f2f9,stroke:#1769aa,stroke-width:1.5px,color:#0f2438;
+  classDef done fill:#e7f4ed,stroke:#178a5a,stroke-width:2px,color:#0f2438;
+  classDef opt fill:#fdf2e8,stroke:#e8791f,stroke-width:1.5px,color:#0f2438;
+```
 
 ## Features
 
@@ -96,7 +111,33 @@ The access-passphrase gate shown above is a soft UI convenience (and doubles as 
 
 ## Architecture at a glance
 
-![Architecture of the Frostbite REDCap Helper: the browser-based web app talks to a Cloudflare Pages Function that stores only ciphertext in Workers KV, opens the pre-populated REDCap survey, and optionally uses a bridge Worker for REDCap's own return codes](docs/images/architecture.png)
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Segoe UI, -apple-system, Roboto, Helvetica, Arial, sans-serif","fontSize":"15px","lineColor":"#7c93a8","primaryTextColor":"#0f2438"}}}%%
+flowchart LR
+  U(["🧑‍⚕️ Clinician"]):::user
+  subgraph BROWSER["💻 Your browser"]
+    APP["Web App — redcaphelper.haddeya.com<br/>Chart Audit · Hennepin · Iloprost<br/>🔒 encrypts before anything leaves"]:::app
+  end
+  subgraph CF["☁️ Cloudflare"]
+    SAVE["Pages Function<br/>/api/save"]:::save
+    KV[("Workers KV<br/>ciphertext only")]:::kv
+    BRIDGE["Optional bridge<br/>/api/code"]:::save
+  end
+  RC["✅ REDCap survey<br/>system of record"]:::rc
+  U --> APP
+  APP -->|"opens pre-populated survey"| RC
+  APP -->|"encrypted blob<br/>{ct, iv, dtok}"| SAVE
+  SAVE --> KV
+  APP -.->|"optional"| BRIDGE
+  BRIDGE -.->|"Save & Return code"| RC
+  classDef user fill:#1769aa,stroke:#0f4c75,color:#ffffff,stroke-width:1px;
+  classDef app fill:#e9f2f9,stroke:#1769aa,stroke-width:2px,color:#0f2438;
+  classDef save fill:#fdf2e8,stroke:#e8791f,stroke-width:1.5px,color:#0f2438;
+  classDef kv fill:#ffffff,stroke:#e8791f,stroke-width:1.5px,color:#0f2438;
+  classDef rc fill:#e7f4ed,stroke:#178a5a,stroke-width:2px,color:#0f2438;
+  style BROWSER fill:#eef5fb,stroke:#bcd8ec,color:#1769aa;
+  style CF fill:#fdf3ea,stroke:#f4c69c,color:#c8641a;
+```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the detailed breakdown.
 
