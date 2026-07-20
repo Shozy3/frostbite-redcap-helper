@@ -4,10 +4,10 @@
   "private": true,
   "description": "Build and test tooling for the Frostbite REDCap Helper (browser extension + Cloudflare Pages web app + save-code bridge).",
   "license": "MIT",
-  "author": "Shahzaib Ahmed",
+  "author": "Haddeya Sultani",
   "contributors": [
-    "Shahzaib Ahmed",
-    "Haddeya Sultani"
+    "Haddeya Sultani",
+    "Shahzaib Ahmed"
   ],
   "repository": {
     "type": "git",

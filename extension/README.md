@@ -68,5 +68,5 @@ extension runs).
 
 ---
 
-Part of the [Frostbite REDCap Helper](../README.md) project by Shahzaib Ahmed
-and Haddeya Sultani, licensed under the [MIT License](../LICENSE).
+Part of the [Frostbite REDCap Helper](../README.md) project by Haddeya Sultani
+and Shahzaib Ahmed, licensed under the [MIT License](../LICENSE).

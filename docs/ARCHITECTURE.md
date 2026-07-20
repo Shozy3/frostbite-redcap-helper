@@ -1,6 +1,6 @@
 # Architecture
 
-**Frostbite REDCap Helper** — Shahzaib Ahmed, Haddeya Sultani. MIT licensed.
+**Frostbite REDCap Helper** — Haddeya Sultani, Shahzaib Ahmed. MIT licensed.
 Live web app: <https://redcaphelper.haddeya.com> · Repo: <https://github.com/Shozy3/frostbite-redcap-helper>
 
 This document describes how the pieces fit together. For "how do I run/deploy

@@ -4,10 +4,10 @@
   "private": true,
   "description": "Optional Cloudflare Worker that bridges the Frostbite REDCap Helper's save code to REDCap's own Save & Return Later code.",
   "license": "MIT",
-  "author": "Shahzaib Ahmed",
+  "author": "Haddeya Sultani",
   "contributors": [
-    "Shahzaib Ahmed",
-    "Haddeya Sultani"
+    "Haddeya Sultani",
+    "Shahzaib Ahmed"
   ],
   "type": "module",
   "scripts": {
