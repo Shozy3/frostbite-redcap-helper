@@ -1,0 +1,599 @@
+/* Frostbite Chart Audit — entry helper. Clean clinical UI. */
+:root{
+  --bg:#eef2f7; --card:#ffffff; --ink:#1b2733; --muted:#5b6776; --line:#dde4ec; --line-strong:#767f8c;
+  --primary:#1769aa; --primary-d:#115089; --primary-soft:#e7f0f8;
+  --ok:#137a4d; --ok-bg:#e6f6ee; --warn:#b45309; --warn-bg:#fdf3e3;
+  --focus:#2684ff; --danger:#c0392b;
+  /* Amputation layer/theme — Okabe-Ito vermillion: a colour-blind-safe partner to the
+     frostbite blue (blue-vs-purple is a known CVD confusion pair, so not purple). */
+  --amp:#d55e00; --amp-d:#a64600; --amp-soft:#fbe9dd;
+  --radius:10px; --shadow:0 1px 3px rgba(16,40,70,.08),0 4px 16px rgba(16,40,70,.06);
+  --maxw:900px; --appbar-h:56px; --formswitch-h:54px;
+}
+*{box-sizing:border-box}
+/* The [hidden] attribute must win over component display rules (e.g. .gate sets
+   display:grid, which would otherwise keep the unlocked overlay visible). */
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink); background:var(--bg); line-height:1.45;
+  -webkit-font-smoothing:antialiased; padding-bottom:84px;
+}
+strong{font-weight:600}
+
+/* Buttons */
+.btn{
+  font:inherit; font-weight:600; cursor:pointer; border:1px solid var(--line);
+  background:#fff; color:var(--ink); padding:.55rem .9rem; border-radius:8px;
+  transition:background .12s,border-color .12s,box-shadow .12s; line-height:1;
+}
+.btn:hover{background:#f6f9fc; border-color:#c4d0dd}
+.btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+.btn:disabled{opacity:.45; cursor:default}
+.btn-primary{background:var(--primary); border-color:var(--primary); color:#fff}
+.btn-primary:hover{background:var(--primary-d); border-color:var(--primary-d)}
+.btn-ghost{background:transparent; border-color:transparent; color:var(--primary)}
+.btn-ghost:hover{background:var(--primary-soft)}
+.btn-sm{padding:.35rem .6rem; font-size:.85rem}
+.btn-block{width:100%; padding:.7rem; margin-top:.4rem}
+
+/* Amputation panel (Hennepin tab) — distinct vermillion so it reads as a separate, optional action */
+.btn-amp{background:var(--amp); border-color:var(--amp); color:#fff}
+.btn-amp:hover{background:var(--amp-d); border-color:var(--amp-d)}
+.btn-amp.is-on{background:var(--amp-d); border-color:var(--amp-d); box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.btn-amp:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(213,94,0,.45)}
+.hhr-amp{border-left:4px solid var(--amp)}
+.hhr-amp .section{color:var(--amp-d); border-bottom-color:var(--amp-soft)}
+.hhr-amp-type .opt:has(input:checked){border-color:var(--amp); background:var(--amp-soft); color:var(--amp-d)}
+.hhr-amp-type .opt input{accent-color:var(--amp)}
+.hhr-amp-inc{margin:.2rem 0 1rem}
+.hhr-amp-preview{white-space:pre-wrap; font:.82rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  background:#fdf6f1; border:1px solid var(--amp-soft); border-radius:8px; padding:.6rem .75rem; margin:.1rem 0 1rem;
+  max-height:220px; overflow:auto; color:var(--ink)}
+.hhr-amp-preview.is-empty{color:var(--muted); font-style:italic}
+.hhr-amp-actions{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
+
+/* Gate */
+.gate{position:fixed; inset:0; display:grid; place-items:center; padding:1.5rem;
+  background:linear-gradient(160deg,#e7eef6,#dde7f1)}
+.gate-card{background:var(--card); width:100%; max-width:380px; padding:2rem 1.8rem;
+  border-radius:14px; box-shadow:var(--shadow); text-align:center}
+.gate-logo{font-size:2.4rem; color:var(--primary)}
+.gate-title{font-size:1.4rem; margin:.3rem 0 .2rem}
+.gate-sub{color:var(--muted); margin:0 0 1.2rem; font-size:.92rem}
+.gate-label{display:block; text-align:left; font-size:.82rem; font-weight:600; color:var(--muted); margin-bottom:.25rem}
+.gate-input{width:100%; padding:.65rem .75rem; font:inherit; border:1px solid var(--line);
+  border-radius:8px; background:#fbfdff}
+.gate-input:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(38,132,255,.25)}
+.gate-err{color:var(--danger); font-size:.85rem; margin:.6rem 0 0}
+.gate-note{color:var(--muted); font-size:.76rem; margin:1.2rem 0 0; line-height:1.5}
+
+/* App bar */
+.appbar{position:sticky; top:var(--formswitch-h); z-index:30; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:1rem; height:var(--appbar-h); padding:0 1.1rem; box-shadow:0 1px 2px rgba(16,40,70,.04)}
+.appbar-title{margin:0; font-size:1.05rem; font-weight:700; line-height:1.2}
+.appbar-sub{font-size:.8rem; color:var(--muted)}
+.appbar-status{margin-left:auto; font-size:.76rem; color:var(--muted); display:flex; align-items:center; gap:.4rem; white-space:nowrap}
+.appbar-status .dot{width:8px; height:8px; border-radius:50%; background:var(--ok); box-shadow:0 0 0 3px var(--ok-bg)}
+
+/* Tabs */
+.tabs{position:sticky; top:calc(var(--formswitch-h) + var(--appbar-h)); z-index:20; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; gap:.15rem; padding:0 .6rem; overflow-x:auto; scrollbar-width:thin}
+.tab{border:none; background:none; font:inherit; cursor:pointer; padding:.7rem .8rem; color:var(--muted);
+  border-bottom:2.5px solid transparent; white-space:nowrap; display:flex; align-items:center; gap:.4rem; font-weight:600}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--primary); border-bottom-color:var(--primary)}
+.tab-badge{min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:.7rem; font-weight:700;
+  display:inline-flex; align-items:center; justify-content:center; color:#fff; background:transparent}
+.tab-badge.warn{background:var(--warn)}
+.tab-badge.done{background:var(--ok)}
+
+/* Progress */
+.progress{max-width:var(--maxw); margin:1rem auto 0; padding:0 1.1rem}
+.progress-meta{display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:var(--muted); margin-bottom:.35rem}
+.progress-meta .btn{margin-left:auto}
+.progress-text strong{color:var(--ink)}
+.progress-track{height:7px; background:#e2e8f0; border-radius:5px; overflow:hidden}
+.progress-fill{height:100%; width:0; background:linear-gradient(90deg,var(--primary),#3a93d4); transition:width .3s}
+
+/* Panels & sections */
+.panels{max-width:var(--maxw); margin:0 auto; padding:1rem 1.1rem}
+.panel[hidden]{display:none}
+.section-group{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:1.1rem 1.2rem; margin-bottom:1rem}
+.section{font-size:.78rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--primary); margin:.1rem 0 1rem; padding-bottom:.6rem; border-bottom:1px solid var(--line)}
+
+/* Field */
+.field{margin:0 0 1.15rem; padding:0; border:none}
+.field:last-child{margin-bottom:.2rem}
+.field[hidden]{display:none}
+.field-label{display:block; font-weight:600; font-size:.92rem; margin-bottom:.4rem}
+.field-label .req{color:var(--danger); margin-left:.2rem}
+.input,textarea.input{width:100%; padding:.55rem .7rem; font:inherit; color:var(--ink);
+  border:1px solid var(--line); border-radius:8px; background:#fbfdff}
+.input:focus,textarea.input:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(38,132,255,.22)}
+input[type=date].input,input[type=datetime-local].input,input[type=number].input{max-width:320px}
+textarea.input{resize:vertical; min-height:2.4rem}
+.hint{font-size:.76rem; color:var(--muted); margin-top:.3rem}
+.field-warn{font-size:.78rem; color:var(--warn); margin-top:.3rem; font-weight:500}
+.field-warn[hidden]{display:none}
+.date-row{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap}
+.auto-btn{font:inherit; font-size:.82rem; font-weight:600; cursor:pointer; border:1px solid var(--line-strong);
+  background:#fff; color:var(--primary-d); padding:.45rem .75rem; border-radius:8px; min-height:38px; white-space:nowrap}
+.auto-btn:hover{background:var(--primary-soft); border-color:var(--primary)}
+.auto-btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+
+/* Options (radio / checkbox / yesno) */
+fieldset.options{border:none; margin:0; padding:0; min-width:0}
+fieldset.options legend{padding:0; font-weight:600; font-size:.92rem; margin-bottom:.45rem}
+fieldset.options legend .req{color:var(--danger); margin-left:.2rem}
+.opts{display:flex; flex-wrap:wrap; gap:.45rem}
+.opt{display:inline-flex; align-items:center; gap:.45rem; padding:.45rem .7rem; border:1px solid var(--line);
+  border-radius:8px; cursor:pointer; background:#fbfdff; font-size:.9rem; transition:background .1s,border-color .1s}
+.opt:hover{border-color:#bcccdd; background:#f4f8fc}
+.opt input{accent-color:var(--primary); margin:0; width:16px; height:16px}
+.opt:has(input:checked){border-color:var(--primary); background:var(--primary-soft); color:var(--primary-d); font-weight:600}
+.opt:focus-within{box-shadow:0 0 0 3px rgba(38,132,255,.22)}
+.clear{margin-top:.5rem; font-size:.78rem; color:var(--muted); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline}
+.clear:hover{color:var(--primary)}
+
+/* Action bar */
+.actionbar{position:fixed; bottom:0; left:0; right:0; z-index:25; background:#fff; border-top:1px solid var(--line);
+  box-shadow:0 -2px 10px rgba(16,40,70,.06); display:flex; align-items:center; gap:.5rem; padding:.6rem 1.1rem}
+.actionbar-spacer{flex:1}
+.actionbar{flex-wrap:wrap}
+.cb-review{display:flex; align-items:center; gap:.35rem; font-size:.82rem; color:var(--muted); white-space:nowrap; cursor:pointer}
+.cb-review input{accent-color:var(--primary); width:16px; height:16px; margin:0}
+.submit-status{font-size:.82rem; max-width:46ch}
+.submit-status.busy{color:var(--muted)}
+.submit-status.ok{color:var(--ok); font-weight:600}
+.submit-status.err{color:var(--danger); font-weight:600}
+@media (max-width:560px){
+  /* Action bar: Previous / Next on one row, full-width primary button on its own row below */
+  .actionbar-spacer{display:none}
+  .actionbar #btn-open{flex:1 1 100%; text-align:center}
+  .appbar-status{display:none}
+  /* App bars: at narrow widths let the title / subtitle / controls wrap onto multiple rows
+     instead of being clipped inside the fixed desktop height (fixes the Hennepin & Iloprost
+     headers where the subtitle overflowed / was truncated). Decouple the sticky offsets. */
+  .appbar{position:static; height:auto; min-height:var(--appbar-h); flex-wrap:wrap;
+    align-items:center; padding-top:.5rem; padding-bottom:.5rem; row-gap:.4rem; column-gap:.7rem}
+  .appbar-main{flex:1 1 100%}
+  .tabs{position:static}
+  .ilop-viewswitch{position:static}
+  body{padding-bottom:112px}
+}
+
+/* Review drawer */
+.review{position:fixed; right:1rem; bottom:74px; z-index:40; width:min(420px,calc(100vw - 2rem));
+  max-height:60vh; overflow:auto; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow)}
+.review-head{display:flex; align-items:center; justify-content:space-between; padding:.8rem 1rem; border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:#fff}
+.review-list{list-style:none; margin:0; padding:.4rem}
+.review-item{margin:0}
+.review-empty{padding:1rem; color:var(--ok); font-weight:600}
+.review-link{width:100%; text-align:left; border:none; background:none; font:inherit; cursor:pointer;
+  padding:.55rem .6rem; border-radius:8px; display:flex; flex-direction:column; gap:.15rem}
+.review-link:hover{background:var(--primary-soft)}
+.review-tab{font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700}
+.review-q{font-size:.9rem}
+
+/* Flash highlight when jumping to a field */
+.flash{animation:flash 2s ease-out}
+@keyframes flash{0%{box-shadow:0 0 0 3px rgba(38,132,255,.5)}100%{box-shadow:0 0 0 3px rgba(38,132,255,0)}}
+.field.flash{border-radius:8px}
+
+/* ---- accessibility & polish (from audit) ---- */
+.sr-only{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0}
+
+/* Accessible tablist: visible keyboard focus + adequate target size */
+.tab{min-height:44px}
+.tab:focus-visible{outline:none; box-shadow:inset 0 0 0 2px var(--focus)}
+
+/* Stronger non-text contrast on control boundaries (>=3:1) */
+.input,textarea.input,.gate-input{border-color:var(--line-strong)}
+.opt{border-color:var(--line-strong); min-height:44px}
+
+/* Comfortable touch targets */
+.btn{min-height:38px}
+.btn-sm{min-height:32px}
+.clear{padding:.45rem .2rem; min-height:32px}
+
+/* Long option labels read better as full-width rows than as chips */
+.opts-vertical{flex-direction:column; align-items:stretch}
+.opts-vertical .opt{width:100%}
+
+/* Matrix groups render as a 2-D table (rows = fields, columns = the shared option
+   set) — the same layout REDCap uses — instead of stacked chip rows. */
+.matrix-block{margin:.2rem 0 1.1rem}
+.matrix-block:last-child{margin-bottom:.2rem}
+.matrix-caption{font-weight:700; font-size:.92rem; color:var(--ink); margin:.2rem 0 .4rem}
+.matrix-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:9px; background:#fcfdfe}
+.matrix-table{border-collapse:collapse; width:100%; font-size:.85rem}
+.matrix-table th,.matrix-table td{border:1px solid var(--line); padding:.3rem .35rem}
+.matrix-table thead th{background:#f1f6fb; font-weight:700; font-size:.74rem; color:var(--muted);
+  text-align:center; vertical-align:bottom; line-height:1.2}
+.matrix-table .mt-col-text{display:inline-block; max-width:5.5rem; white-space:normal}
+.matrix-table th.mt-row{text-align:left; font-weight:600; font-size:.85rem; white-space:nowrap;
+  position:sticky; left:0; background:#fff; z-index:1}
+.matrix-table th.mt-corner{position:sticky; left:0; background:#f1f6fb; z-index:2; min-width:2rem}
+.matrix-table tbody tr:hover td,.matrix-table tbody tr:hover th.mt-row{background:#f4f8fc}
+.mt-cell{text-align:center; padding:0}
+.mt-box{display:flex; align-items:center; justify-content:center; cursor:pointer; min-height:38px; min-width:38px; margin:0}
+.mt-box input{accent-color:var(--primary); width:18px; height:18px; margin:0; cursor:pointer}
+.mt-cell:has(input:checked){background:var(--primary-soft)}
+.matrix-table tbody tr:hover .mt-cell:has(input:checked){background:var(--primary-soft)}
+
+/* Long vertical option lists: cap width and separate rows for readability */
+.opts-vertical{max-width:640px}
+.opts-vertical .opt{min-height:40px; border-color:var(--line)}
+.opts-vertical .opt + .opt{margin-top:-1px}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important; animation-iteration-count:1!important;
+    transition-duration:.001ms!important; scroll-behavior:auto!important}
+}
+
+/* ===== Top-level form switcher (Frostbite | Hennepin calculator) ===== */
+.formswitch{position:sticky; top:0; z-index:50; background:#0e2336; display:flex; gap:.3rem; padding:.45rem .6rem; overflow-x:auto; scrollbar-width:thin}
+.formswitch .sw{border:none; background:transparent; color:#c4d2e0; font:inherit; font-weight:600; font-size:.9rem;
+  cursor:pointer; padding:.5rem 1rem; border-radius:8px; white-space:nowrap; min-height:40px; transition:background .12s,color .12s}
+.formswitch .sw:hover{background:rgba(255,255,255,.10); color:#fff}
+.formswitch .sw.active{background:#fff; color:var(--primary-d)}
+.formswitch .sw:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.55)}
+
+/* ===== Hennepin Frostbite Score calculator ===== */
+.hhr-livetotal{margin-left:auto; display:flex; align-items:center; gap:.5rem; background:var(--primary-soft);
+  border:1px solid var(--primary); color:var(--primary-d); padding:.28rem .75rem; border-radius:999px; white-space:nowrap}
+.hhr-livetotal-label{font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; opacity:.85}
+.hhr-livetotal-val{font-size:1.2rem; font-weight:800; font-variant-numeric:tabular-nums}
+.hhr-fontsize{display:flex; align-items:center; gap:.15rem; margin-left:auto}
+.hhr-fontsize + .hhr-livetotal{margin-left:.6rem}
+.hhr-fontsize-btn{border:1px solid var(--line-strong); background:#fff; color:var(--muted); border-radius:6px;
+  min-width:30px; min-height:30px; line-height:1; padding:.1rem .3rem; cursor:pointer; font-weight:800}
+.hhr-fontsize-btn:hover{border-color:var(--primary); color:var(--primary-d)}
+.hhr-fontsize-btn.active{border-color:var(--primary); background:var(--primary-soft); color:var(--primary-d)}
+.hhr-fontsize-btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.3)}
+.hhr-intro{font-size:.85rem; color:var(--muted); line-height:1.55; margin:.1rem 0 0}
+.hhr-figure{margin:1rem 0 0}
+.hhr-diagram{display:block; width:100%; max-width:560px; height:auto; border:1px solid var(--line-strong); border-radius:8px; background:#fff}
+.hhr-figure figcaption{margin-top:.45rem}
+
+.hhr-scorebox{background:linear-gradient(160deg,#eef6ff,#e3eefa); border-color:var(--primary)}
+.hhr-total{display:flex; align-items:baseline; justify-content:space-between; gap:1rem; padding-bottom:.7rem; border-bottom:1px solid var(--line)}
+.hhr-total-label{font-weight:700; font-size:1rem}
+.hhr-total-val{font-size:2.4rem; font-weight:800; color:var(--primary-d); line-height:1; font-variant-numeric:tabular-nums}
+.hhr-score-grid{display:grid; grid-template-columns:1fr auto; gap:.05rem 1rem; margin-top:.7rem; font-size:.88rem}
+.hhr-score-row{display:contents}
+.hhr-score-name{color:var(--muted); padding:.18rem 0}
+.hhr-score-num{font-weight:700; text-align:right; font-variant-numeric:tabular-nums; padding:.18rem 0; color:var(--ink)}
+.hhr-score-row.major .hhr-score-name{color:var(--ink); font-weight:700; margin-top:.45rem}
+.hhr-score-row.major .hhr-score-num{color:var(--primary-d); margin-top:.45rem}
+
+/* Clickable anatomical diagrams — image-map overlay, pixel-faithful to the original */
+.hhr-dx-group .section{margin-bottom:.35rem}
+.hhr-dx-empty{margin:.1rem 0 .2rem}
+.hhr-dx{margin:0 0 1rem; padding:.7rem .8rem; border:1px solid var(--line); border-radius:10px; background:#fff}
+.hhr-dx[hidden]{display:none}
+.hhr-dx-head{display:flex; align-items:center; gap:.6rem; margin:0 0 .5rem; padding:0}
+.hhr-dx-title{font-weight:700; font-size:.95rem}
+.hhr-dx-count{font-size:.8rem; color:var(--primary-d); font-weight:600}
+.hhr-dx-head .btn{margin-left:auto}
+.hhr-dx-wrap{position:relative; width:100%; max-width:560px; margin:0 auto}
+.hhr-dx-img{display:block; width:100%; height:auto; border:1px solid var(--line-strong); border-radius:8px; background:#fff}
+.hhr-dx-svg{position:absolute; inset:0; width:100%; height:100%; touch-action:none; user-select:none; -webkit-user-select:none; overflow:visible}
+.hhr-seg{fill:rgba(0,0,0,0); stroke:rgba(0,0,0,0); stroke-width:1; cursor:pointer; pointer-events:fill; transition:fill .08s ease}
+.hhr-seg:hover{fill:rgba(38,132,255,.28); stroke:var(--primary)}
+.hhr-seg:focus{outline:none}
+.hhr-seg:focus-visible{fill:rgba(38,132,255,.32); stroke:var(--primary-d); stroke-width:2}
+.hhr-seg.on{fill:rgba(38,132,255,.5); stroke:var(--primary-d); stroke-width:2.5}
+.hhr-seg.on:hover{fill:rgba(38,132,255,.66)}
+.hhr-dx-list{margin-top:.6rem; font-size:.85rem}
+.hhr-dx-list summary{cursor:pointer; color:var(--muted); font-weight:600; padding:.2rem 0}
+.hhr-dx-list[open] summary{margin-bottom:.4rem}
+
+/* Per-digit score breakdown */
+.hhr-regions{display:grid; gap:.7rem; margin-top:.8rem}
+.hhr-region{background:#fff; border:1px solid var(--line); border-radius:10px; padding:.55rem .8rem}
+.hhr-region[hidden]{display:none}
+.hhr-region-head{display:flex; align-items:baseline; justify-content:space-between; gap:1rem; border-bottom:1px solid var(--line); padding-bottom:.38rem}
+.hhr-region-name{font-weight:700; font-size:.95rem}
+.hhr-region-score{font-weight:800; font-size:1.12rem; color:var(--primary-d); font-variant-numeric:tabular-nums}
+.hhr-digit-grid{display:grid; grid-template-columns:1fr auto; gap:.04rem 1rem; margin-top:.42rem; font-size:.88rem}
+.hhr-digit-name{color:var(--muted); padding:.15rem 0}
+.hhr-digit-num{font-weight:700; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink)}
+
+/* Vertical bullet-point option lists (Hennepin calculator only; the checkbox is the bullet).
+   Scoped to #app-hhr so the frostbite form's chip-style options are untouched. */
+#app-hhr .opts-bullets{display:flex; flex-direction:column; gap:.05rem; max-width:680px}
+#app-hhr .opts-bullets .opt{border:none; background:none; border-radius:6px; width:100%; min-height:36px;
+  margin:0; padding:.35rem .5rem; justify-content:flex-start; text-align:left; gap:.6rem; font-size:.88rem}
+#app-hhr .opts-bullets .opt .opt-text{flex:1}
+#app-hhr .opts-bullets .opt:hover{background:#f1f6fb}
+#app-hhr .opts-bullets .opt:has(input:checked){background:var(--primary-soft); color:var(--primary-d); font-weight:600}
+/* Long section-code lists (16+) wrap into columns of bullets instead of one tall wall */
+#app-hhr .opts-bullets.opts-bullets-multi{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:.05rem 1.25rem; max-width:none}
+
+@media (max-width:560px){
+  .hhr-livetotal{padding:.2rem .55rem}
+  .hhr-total-val{font-size:2rem}
+  #app-hhr .opts-bullets.opts-bullets-multi{grid-template-columns:repeat(auto-fill,minmax(116px,1fr)); gap:0 .8rem}
+}
+
+/* ===== Iloprost dose calculator ===== */
+/* Live grand-total pill in the app bar (mirrors the Hennepin live total). */
+.ilop-livetotal{margin-left:auto; display:flex; align-items:baseline; gap:.4rem; background:var(--primary-soft);
+  border:1px solid var(--primary); color:var(--primary-d); padding:.28rem .8rem; border-radius:999px; white-space:nowrap}
+.ilop-livetotal-label{font-size:.7rem; text-transform:uppercase; letter-spacing:.04em; font-weight:700; opacity:.85}
+.ilop-livetotal-val{font-size:1.25rem; font-weight:800; font-variant-numeric:tabular-nums}
+.ilop-livetotal-unit{font-size:.8rem; font-weight:700; opacity:.8}
+
+/* Calculator | Logs sub-nav (sticky under the app bar, like the form tabs). */
+.ilop-viewswitch{position:sticky; top:calc(var(--formswitch-h) + var(--appbar-h)); z-index:20; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; gap:.35rem; padding:.45rem .6rem}
+.ilop-vbtn{border:1px solid var(--line-strong); background:#fff; color:var(--muted); font:inherit; font-weight:600;
+  cursor:pointer; padding:.4rem .95rem; border-radius:999px; min-height:36px; display:inline-flex; align-items:center; gap:.45rem}
+.ilop-vbtn:hover{border-color:var(--primary); color:var(--primary-d)}
+.ilop-vbtn.active{background:var(--primary); border-color:var(--primary); color:#fff}
+.ilop-vbtn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+.ilop-vbadge{min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:.7rem; font-weight:800;
+  display:inline-flex; align-items:center; justify-content:center; background:var(--primary-soft); color:var(--primary-d)}
+.ilop-vbadge[hidden]{display:none}
+.ilop-vbtn.active .ilop-vbadge{background:#fff; color:var(--primary-d)}
+
+/* Minutes-between helper */
+.ilop-minrow{display:flex; flex-wrap:wrap; align-items:flex-end; gap:.8rem}
+.ilop-tf{display:flex; flex-direction:column; gap:.2rem}
+.ilop-tf-lab{font-size:.78rem; color:var(--muted); font-weight:600}
+.ilop-tf .input{width:9rem}
+.ilop-minresult{font-weight:700; font-variant-numeric:tabular-nums; color:var(--muted); padding-bottom:.45rem; white-space:nowrap}
+.ilop-minresult.ok{color:var(--primary-d)}
+
+/* Dose card */
+.ilop-dose-head{display:flex; align-items:center; gap:.6rem; margin-bottom:.4rem; padding-bottom:.55rem; border-bottom:1px solid var(--line)}
+.ilop-dose-title{font-weight:800; font-size:1rem; color:var(--ink)}
+.ilop-dose-total{display:flex; align-items:baseline; gap:.35rem; background:#fff; border:1px solid var(--primary); border-radius:999px; padding:.18rem .7rem}
+.ilop-dose-total-lab{font-size:.66rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700}
+.ilop-dose-total-val{font-weight:800; font-variant-numeric:tabular-nums; color:var(--primary-d); font-size:1.05rem}
+.ilop-dose-total-unit{font-size:.74rem; color:var(--muted); font-weight:700}
+
+/* Rate rows — grid on desktop, compact stack on phones */
+.ilop-rows{margin:.2rem 0 .6rem}
+.ilop-row{display:grid; grid-template-columns:8rem 8rem 1fr 1.9rem; gap:.5rem; align-items:center;
+  padding:.32rem 0; border-bottom:1px dashed var(--line)}
+.ilop-row:last-child{border-bottom:none}
+.ilop-row-head{border-bottom:1px solid var(--line); padding-bottom:.3rem}
+.ilop-row-head span{font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700}
+.ilop-c-time .input,.ilop-c-rate .input{width:100%; max-width:none}
+.ilop-c-calc{font-variant-numeric:tabular-nums; font-size:.88rem; color:var(--ink)}
+.ilop-c-calc.muted{color:var(--muted)}
+.ilop-c-rm{display:flex; justify-content:flex-end}
+.ilop-rowrm{border:none; background:none; color:var(--muted); cursor:pointer; font-size:1.25rem; line-height:1;
+  padding:.2rem .35rem; border-radius:6px; min-width:30px; min-height:30px}
+.ilop-rowrm:hover{background:var(--warn-bg); color:var(--danger)}
+
+/* Infusion-stopped marker */
+.ilop-stoprow{display:flex; flex-wrap:wrap; align-items:center; gap:.5rem .8rem; margin-top:.7rem; padding-top:.6rem; border-top:1px solid var(--line)}
+.ilop-stop{display:flex; align-items:center; gap:.45rem; font-weight:600; font-size:.9rem}
+.ilop-stop-icon{color:var(--danger); font-size:.7rem}
+.ilop-stop .input{width:9rem}
+.ilop-stoprow .hint{margin-top:0}
+.ilop-adddose-wrap{display:flex; align-items:center; gap:.4rem; margin:.2rem 0 1rem}
+
+/* Logs */
+.ilop-logs-headrow{display:flex; align-items:center; gap:.8rem; flex-wrap:wrap}
+.ilop-logs-headrow .section{margin:0; border:none; padding:0; flex:0 0 auto}
+.ilop-clearall-box{margin-left:auto; display:flex; align-items:center; gap:.4rem}
+.ilop-logs-empty{text-align:center}
+.ilop-log-head{display:flex; align-items:baseline; justify-content:space-between; gap:1rem}
+.ilop-log-meta{display:flex; flex-direction:column; gap:.1rem}
+.ilop-log-date{font-weight:700; font-size:.92rem; color:var(--ink)}
+.ilop-log-label{font-size:.82rem; color:var(--muted)}
+.ilop-log-total{white-space:nowrap}
+.ilop-log-total-val{font-size:1.5rem; font-weight:800; color:var(--primary-d); font-variant-numeric:tabular-nums}
+.ilop-log-total-unit{font-size:.85rem; color:var(--muted); font-weight:700}
+.ilop-log-detail{margin-top:.5rem; font-size:.85rem}
+.ilop-log-detail summary{cursor:pointer; color:var(--primary-d); font-weight:600; padding:.2rem 0}
+.ilop-steps{margin:.5rem 0 0; padding:.7rem .8rem; background:#f7fafd; border:1px solid var(--line); border-radius:8px;
+  overflow-x:auto; font-size:.8rem; line-height:1.5; white-space:pre; color:var(--ink);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.ilop-log-actions{display:flex; align-items:center; gap:.4rem; margin-top:.6rem; padding-top:.5rem; border-top:1px solid var(--line)}
+.ilop-confirm-q{font-size:.85rem; color:var(--danger); font-weight:700}
+.ilop-danger{background:var(--danger); border-color:var(--danger); color:#fff}
+.ilop-danger:hover{background:#a93226; border-color:#a93226}
+.ilop-del{color:var(--danger)}
+.ilop-del:hover{background:var(--warn-bg)}
+
+@media (max-width:560px){
+  .ilop-row{grid-template-columns:1fr 1fr auto; gap:.4rem}
+  .ilop-row-head{display:none}
+  .ilop-c-calc{grid-column:1 / -1}
+  .ilop-livetotal{padding:.2rem .55rem}
+  .ilop-livetotal-val{font-size:1.05rem}
+}
+
+/* "First time?" nudge + link button */
+.ilop-nudge{display:flex; align-items:center; gap:.3rem; flex-wrap:wrap; background:var(--primary-soft);
+  border:1px solid var(--primary); border-radius:8px; padding:.5rem .8rem; margin-bottom:1rem; font-size:.88rem; color:var(--primary-d)}
+.ilop-link{border:none; background:none; font:inherit; font-weight:700; color:var(--primary-d); cursor:pointer;
+  text-decoration:underline; padding:.1rem .2rem; min-height:32px}
+.ilop-link:hover{color:var(--primary)}
+.ilop-link:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4); border-radius:4px}
+
+/* How-to view */
+.ilop-guide{margin:.2rem 0 0; padding-left:1.3rem; line-height:1.6}
+.ilop-guide li{margin:0 0 .6rem; padding-left:.2rem}
+.ilop-guide li:last-child{margin-bottom:0}
+.ilop-howto-actions{margin:0 0 1rem}
+
+/* Animated walkthrough */
+.ilop-demo{border:1px solid var(--line); border-radius:10px; padding:.8rem; background:#fbfdff}
+.ilop-demo-card{background:#fff; border:1px solid var(--line); border-radius:10px; padding:.7rem .8rem}
+.ilop-demo-head{display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding-bottom:.5rem;
+  margin-bottom:.4rem; border-bottom:1px solid var(--line)}
+.ilop-demo-title{font-weight:800}
+.ilop-demo-total-lab{font-size:.68rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700}
+.ilop-demo-total-val{font-weight:800; font-variant-numeric:tabular-nums; color:var(--primary-d)}
+.ilop-demo-row{display:grid; grid-template-columns:4.6rem 6rem 1fr; gap:.5rem; align-items:center; min-height:2.1rem}
+.ilop-demo-chip{display:inline-flex; align-items:center; justify-content:center; min-width:3.4rem; min-height:1.7rem;
+  border:1px dashed var(--line-strong); border-radius:6px; background:#fff; color:var(--muted); font-size:.85rem;
+  font-variant-numeric:tabular-nums; transition:background .25s,border-color .25s,color .25s}
+.ilop-demo-chip.shown{border-style:solid; border-color:var(--primary); background:var(--primary-soft); color:var(--primary-d); font-weight:600}
+.ilop-demo-rowcalc{font-size:.84rem; color:var(--muted); font-variant-numeric:tabular-nums; opacity:0; transition:opacity .25s}
+.ilop-demo-rowcalc.shown{opacity:1}
+.ilop-demo-stoprow{grid-template-columns:auto 4.6rem; gap:.5rem; margin-top:.2rem; padding-top:.4rem; border-top:1px dashed var(--line)}
+.ilop-demo-stoplab{font-weight:600; font-size:.86rem}
+.ilop-demo-cap{min-height:2.6rem; margin:.7rem 0 0; padding:.55rem .7rem; background:#fff; border:1px solid var(--line);
+  border-radius:8px; font-size:.9rem; color:var(--ink); line-height:1.45}
+.ilop-demo-controls{display:flex; align-items:center; gap:.4rem; margin-top:.6rem}
+.ilop-demo-dots{display:flex; gap:.3rem; align-items:center}
+.ilop-demo-dot{width:14px; height:14px; min-height:14px; padding:0; border-radius:50%; border:1px solid var(--line-strong);
+  background:#fff; cursor:pointer}
+.ilop-demo-dot:hover{border-color:var(--primary)}
+.ilop-demo-dot.active{background:var(--primary); border-color:var(--primary)}
+.ilop-demo-dot:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+.ilop-demo-total-val.pulse{animation:ilop-pulse 1s ease-out}
+@keyframes ilop-pulse{0%{background:var(--ok-bg); box-shadow:0 0 0 4px var(--ok-bg)}100%{background:transparent; box-shadow:0 0 0 4px transparent}}
+
+/* ---------------- Save / resume bar + save-code modal ---------------- */
+.savebar{display:flex; align-items:center; gap:.5rem; padding:.4rem .75rem; background:var(--primary-soft); border-bottom:1px solid var(--line); flex-wrap:wrap}
+.savebar #save-status{margin-left:.25rem}
+
+.fb-modal{position:fixed; inset:0; z-index:120; background:rgba(8,20,34,.55); display:flex; align-items:flex-start; justify-content:center; padding:6vh 1rem 1rem; overflow:auto}
+.fb-modal-card{background:var(--card); color:var(--ink); width:100%; max-width:460px; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.fb-modal-head{display:flex; align-items:center; gap:.5rem; padding:.7rem .9rem; border-bottom:1px solid var(--line)}
+.fb-modal-body{padding:.9rem; display:flex; flex-direction:column; gap:.6rem}
+.fb-modal-body p{margin:0}
+.fb-code{display:flex; align-items:center; gap:.5rem; flex-wrap:wrap}
+.fb-code .input{flex:1; min-width:8rem}
+.fb-code-val{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:1.5rem; font-weight:700; letter-spacing:.12em; color:var(--primary-d); background:var(--primary-soft); padding:.35rem .7rem; border-radius:8px; user-select:all}
+.fb-code-in{flex:1; min-width:8rem; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:1.1rem; letter-spacing:.1em; text-transform:uppercase}
+.fb-code-actions{display:flex; gap:.5rem; flex-wrap:wrap}
+.fb-divider{height:1px; background:var(--line); margin:.3rem 0}
+.fb-savelist{display:flex; flex-direction:column; gap:.4rem; max-height:40vh; overflow:auto}
+.fb-saverow{display:flex; align-items:center; gap:.5rem; padding:.4rem .5rem; border:1px solid var(--line); border-radius:8px}
+.fb-saveinfo{display:flex; flex-direction:column; flex:1; min-width:0}
+.fb-savecode{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-weight:700; color:var(--primary-d)}
+.fb-savedate{font-size:.78rem; color:var(--muted)}
+
+/* Export dialog (CSV / XLSX) + live preview */
+.fb-modal-card.fb-modal-wide{max-width:680px}
+.fb-export-line{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap}
+.fb-export-lab{font-weight:600; font-size:.85rem; color:var(--ink)}
+.fb-export-pvcap{margin-top:.2rem; color:var(--muted)}
+.fb-export-preview{max-height:38vh; overflow:auto; border:1px solid var(--line); border-radius:8px; background:#fff}
+.fb-export-preview > .hint{padding:.7rem}
+.fb-export-table{width:100%; border-collapse:collapse; font-size:.8rem}
+.fb-export-table th{position:sticky; top:0; z-index:1; text-align:left; font-weight:600; background:var(--primary-soft); color:var(--primary-d); padding:.4rem .55rem; border-bottom:1px solid var(--line); white-space:nowrap}
+.fb-export-table td{padding:.35rem .55rem; border-bottom:1px solid var(--line); vertical-align:top; word-break:break-word}
+.fb-export-table tr:last-child td{border-bottom:none}
+.fb-export-table td:first-child{color:var(--muted)}
+
+.fb-clearall{margin-top:.5rem; text-align:center}
+
+/* Iloprost: single-dose cap note */
+.ilop-dose-cap{font-size:.8rem; color:var(--warn); font-weight:600; margin-left:.4rem}
+/* Iloprost: invalid typed time (00:00–23:59) flagged on blur */
+.ilop-time.invalid{border-color:var(--danger); box-shadow:0 0 0 2px rgba(192,57,43,.15)}
+
+/* Live-version update banner (shown when a newer deploy is detected and there is unsaved work) */
+.fb-update{position:fixed; top:0; left:0; right:0; z-index:200; background:var(--primary); color:#fff;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:.6rem .9rem;
+  padding:.55rem 1rem; font-weight:600; box-shadow:0 2px 10px rgba(16,40,70,.3)}
+.fb-update .btn{background:#fff; color:var(--primary); border:1px solid #fff; font-weight:700}
+.fb-update .btn:hover{background:#eef5fb}
+
+/* ===== Hennepin: amputation layer, sub-tabs, compare & salvage ===== */
+/* Internal sub-tab bar (Frostbite Score | Amputation | Compare) — cloned from .ilop-viewswitch */
+.hhr-viewswitch{position:sticky; top:calc(var(--formswitch-h) + var(--appbar-h)); z-index:20; background:#fff;
+  border-bottom:1px solid var(--line); display:flex; gap:.35rem; padding:.45rem .6rem}
+.hhr-vbtn{border:1px solid var(--line-strong); background:#fff; color:var(--muted); font:inherit; font-weight:600;
+  cursor:pointer; padding:.4rem .95rem; border-radius:999px; min-height:36px; display:inline-flex; align-items:center; gap:.45rem}
+.hhr-vbtn:hover{border-color:var(--primary); color:var(--primary-d)}
+.hhr-vbtn.active{background:var(--primary); border-color:var(--primary); color:#fff}
+.hhr-vbtn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+.hhr-vbtn.amp:hover{border-color:var(--amp); color:var(--amp-d)}
+.hhr-vbtn.amp.active{background:var(--amp); border-color:var(--amp); color:#fff}
+.hhr-vbtn.amp:focus-visible{box-shadow:0 0 0 3px rgba(213,94,0,.4)}
+.hhr-vbadge{min-width:18px; height:18px; padding:0 5px; border-radius:9px; font-size:.7rem; font-weight:800;
+  display:inline-flex; align-items:center; justify-content:center; background:var(--amp-soft); color:var(--amp-d)}
+.hhr-vbadge[hidden]{display:none}
+.hhr-vbtn.amp.active .hhr-vbadge{background:#fff; color:var(--amp-d)}
+
+/* Live-total pill switches to the amputation colour on the Amputation tab */
+.hhr-livetotal.amp{background:var(--amp-soft); border-color:var(--amp); color:var(--amp-d)}
+
+/* Section header + count in the amputation colour */
+.section.amp{color:var(--amp-d); border-bottom-color:var(--amp-soft)}
+.hhr-dx-count.amp{color:var(--amp-d)}
+
+/* Amputation selected segment — vermillion (mirror of the blue .hhr-seg.on). Distinguished
+   from frostbite by hue AND, in the overlay, by stroke style (never colour alone). */
+.hhr-amp-layer .hhr-seg:hover{fill:rgba(213,94,0,.28); stroke:var(--amp)}
+.hhr-amp-layer .hhr-seg:focus-visible{fill:rgba(213,94,0,.32); stroke:var(--amp-d); stroke-width:2}
+.hhr-seg.amp-on{fill:rgba(213,94,0,.5); stroke:var(--amp-d); stroke-width:2.5}
+.hhr-seg.amp-on:hover{fill:rgba(213,94,0,.66)}
+/* Compare overlay: a section that is BOTH frostbitten and amputated — vermillion fill +
+   blue DASHED outline (redundant encoding, distinguishable without colour). */
+.hhr-seg.both{fill:rgba(213,94,0,.5); stroke:var(--primary-d); stroke-width:2.6; stroke-dasharray:6 3}
+
+/* Amputation mode banner (locus-of-attention mode indicator) */
+.hhr-amp-banner{display:flex; gap:.6rem; align-items:flex-start; border-left:5px solid var(--amp);
+  background:var(--amp-soft); color:var(--amp-d); border-radius:8px; padding:.6rem .8rem; margin-bottom:1rem; font-size:.9rem}
+.hhr-amp-banner b{color:var(--amp-d)}
+.hhr-amp-banner-bar{font-weight:800}
+
+/* Amputation score box (its own number) */
+.hhr-amp-scorebox{background:linear-gradient(160deg,#fdf1e8,#fbe4d4); border-color:var(--amp)}
+.hhr-amp-total-val{font-size:2.4rem; font-weight:800; color:var(--amp-d); line-height:1; font-variant-numeric:tabular-nums}
+
+/* Amputated-digits summary chips */
+.hhr-amp-summary-wrap{margin:.6rem 0 .2rem; font-size:.9rem}
+.hhr-amp-summary-lab{font-weight:600}
+.hhr-amp-chip{display:inline-block; background:var(--amp-soft); color:var(--amp-d); border:1px solid var(--amp);
+  border-radius:999px; padding:.12rem .6rem; font-weight:700; font-size:.82rem; margin:.1rem .25rem .1rem 0}
+
+/* Compare — salvage rate cards + formula note */
+.hhr-salvage{display:flex; flex-wrap:wrap; gap:.6rem; margin:.2rem 0 .5rem}
+.hhr-sv-card{flex:1; min-width:160px; border:1px solid var(--line); border-radius:10px; padding:.55rem .8rem; background:#fff}
+.hhr-sv-card.headline{border-color:var(--ok); background:var(--ok-bg)}
+.hhr-sv-lab{font-size:.7rem; text-transform:uppercase; letter-spacing:.03em; font-weight:700; color:var(--muted)}
+.hhr-sv-val{font-size:1.9rem; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.15; color:var(--ink)}
+.hhr-sv-card.headline .hhr-sv-val{color:var(--ok)}
+.hhr-sv-sub{font-size:.74rem; color:var(--muted); font-variant-numeric:tabular-nums}
+.hhr-salvage-note{font-size:.75rem; color:var(--muted); line-height:1.55; margin:.2rem 0 1rem;
+  border-left:3px solid var(--line-strong); padding-left:.7rem}
+.hhr-salvage-note b{color:var(--ink)}
+
+/* Compare — side/overlay toggle, two-column layout, legend */
+.hhr-cmp-tools{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; margin:.2rem 0 .8rem}
+.hhr-cmp-cols{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
+.hhr-cmp-collbl{font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; font-weight:700; margin:.2rem 0 .6rem}
+.hhr-cmp-legend{display:inline-flex; flex-wrap:wrap; gap:1rem; align-items:center; font-size:.82rem; color:var(--muted); margin-left:auto}
+.hhr-sw{display:inline-block; width:16px; height:16px; border-radius:3px; vertical-align:-3px; margin-right:.35rem}
+.hhr-sw-blue{background:rgba(38,132,255,.5); border:2px solid var(--primary-d)}
+.hhr-sw-amp{background:rgba(213,94,0,.5); border:2px solid var(--amp-d)}
+.hhr-sw-both{background:rgba(213,94,0,.5); border:2px dashed var(--primary-d)}
+/* read-only compare snapshots */
+.hhr-dx-ro .hhr-seg{pointer-events:none; cursor:default}
+.hhr-cmp-cols .hhr-dx-grid, #hhr-cmp-overgrid{display:grid; gap:1rem}
+
+@media (max-width:560px){
+  .hhr-viewswitch{position:static}
+  .hhr-cmp-cols{grid-template-columns:1fr}
+}
+
+/* Per-limb Cauchy grade picker (frostbite) — sets which grade row "Use score" fills */
+.hhr-grade-row{display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin:.35rem 0 .15rem}
+.hhr-grade-lab{font-size:.78rem; font-weight:700; color:var(--muted)}
+.hhr-grade-btn{border:1px solid var(--line-strong); background:#fff; color:var(--muted); font:inherit; font-weight:600;
+  cursor:pointer; padding:.2rem .65rem; border-radius:999px; min-height:30px; font-size:.82rem}
+.hhr-grade-btn:hover{border-color:var(--primary); color:var(--primary-d)}
+.hhr-grade-btn.active{background:var(--primary); border-color:var(--primary); color:#fff}
+.hhr-grade-btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(38,132,255,.4)}
+.hhr-grade-hint{margin:.15rem 0 0; flex-basis:100%}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action https://redcap.ualberta.ca https://redcap.hhrinstitute.org; base-uri 'none'; frame-ancestors 'none'">
+<title>REDCap Helper</title>
+<link rel="stylesheet" href="styles.css?v=20260626b">
+</head>
+<body>
+
+<!-- Access gate -->
+<div id="gate" class="gate">
+  <form id="gate-form" class="gate-card" autocomplete="off">
+    <div class="gate-logo" aria-hidden="true">❄</div>
+    <h1 class="gate-title">REDCap Helper</h1>
+    <p class="gate-sub">Restricted entry helper. Enter the access passphrase to continue.</p>
+    <label class="gate-label" for="gate-pass">Passphrase</label>
+    <input id="gate-pass" class="gate-input" type="password" autocomplete="current-password" autofocus>
+    <button id="gate-btn" class="btn btn-primary btn-block" type="submit">Unlock</button>
+    <p id="gate-err" class="gate-err" role="alert" hidden>Incorrect passphrase. Try again.</p>
+    <p class="gate-note">Your entries stay in this browser tab. When you’re ready, the helper opens the real REDCap survey in a new tab, pre-filled, for you to review and submit there. If you use “Save &amp; get code,” an end-to-end-encrypted copy is stored (until you delete it) so you can resume on any computer — it’s scrambled in your browser, so no one (not even us) can read it.</p>
+  </form>
+</div>
+
+<!-- Top-level form switcher (revealed after unlock) -->
+<nav id="formswitch" class="formswitch" role="tablist" aria-label="Choose a form" hidden>
+  <button id="sw-frostbite" class="sw active" type="button" role="tab" aria-selected="true" aria-controls="app">Frostbite Chart Audit</button>
+  <button id="sw-hhr" class="sw" type="button" role="tab" aria-selected="false" aria-controls="app-hhr">Hennepin Score Calculator</button>
+  <button id="sw-ilop" class="sw" type="button" role="tab" aria-selected="false" aria-controls="app-ilop">Iloprost Calculator</button>
+</nav>
+
+<!-- Save / resume (revealed after unlock): one short code captures all three forms on THIS computer -->
+<div id="savebar" class="savebar" hidden>
+  <button id="btn-save" class="btn btn-sm" type="button">Save &amp; get code</button>
+  <button id="btn-resume" class="btn btn-sm" type="button">Resume from code</button>
+  <span id="save-status" class="submit-status" role="status" aria-live="polite"></span>
+</div>
+
+<!-- App -->
+<div id="app" hidden>
+  <header class="appbar">
+    <div class="appbar-main">
+      <div class="appbar-title" id="app-title">Frostbite Chart Audit</div>
+      <div class="appbar-sub" id="app-sub">Data-entry helper</div>
+    </div>
+    <div class="appbar-status" id="app-status" title="Entries stay in this browser tab until you submit them to REDCap">
+      <span class="dot"></span> Entries stay in this tab until you submit
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Form sections"></nav>
+
+  <div class="progress" aria-live="polite">
+    <div class="progress-meta">
+      <span class="progress-text"><strong id="progress-count">0 / 0</strong> required fields complete</span>
+      <button id="btn-review" class="btn btn-ghost btn-sm" type="button">Review missing</button>
+      <button id="btn-clear" class="btn btn-ghost btn-sm" type="button">Start over</button>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <main class="panels" id="panels"></main>
+
+  <div class="actionbar">
+    <button id="btn-prev" class="btn" type="button">‹ Previous</button>
+    <button id="btn-next" class="btn" type="button">Next ›</button>
+    <span class="actionbar-spacer"></span>
+    <button id="btn-export" class="btn" type="button">Export ↓</button>
+    <button id="btn-open" class="btn btn-primary" type="button">Open populated REDCap form for review →</button>
+  </div>
+
+  <div id="review" class="review" hidden>
+    <div class="review-head"><strong>Missing required fields</strong>
+      <button id="review-close" class="btn btn-ghost btn-sm" type="button">Close</button></div>
+    <ul id="review-list" class="review-list"></ul>
+  </div>
+</div>
+
+<!-- Hennepin Score Calculator (built on first switch) -->
+<div id="app-hhr" hidden></div>
+
+<!-- Iloprost dose calculator (built on first switch) -->
+<div id="app-ilop" hidden></div>
+
+<script src="config.js?v=20260626b"></script>
+<script src="datemask.js?v=20260626b"></script>
+<script src="dictionary.js?v=20260626b"></script>
+<script src="dict_hhr.js?v=20260626b"></script>
+<script src="branch.js?v=20260626b"></script>
+<script src="payload.js?v=20260626b"></script>
+<script src="hhr_calc.js?v=20260626b"></script>
+<script src="hhr_maps.js?v=20260626b"></script>
+<script src="hhr.js?v=20260626b"></script>
+<script src="ilop.js?v=20260626b"></script>
+<script src="cryptosave.js?v=20260626b"></script>
+<script src="export.js?v=20260626b"></script>
+<script src="app.js?v=20260626b"></script>
+</body>
+</html>

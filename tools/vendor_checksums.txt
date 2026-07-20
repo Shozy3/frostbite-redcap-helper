@@ -1,0 +1,5 @@
+# Recorded SHA-256 checksums of vendored third-party assets (SECURITY_AUDIT.md F-14).
+# Format: <sha256>  <path-relative-to-repo-root>
+# Verify with:  node tools/verify_vendor.js
+# Update a line ONLY when intentionally upgrading the pinned upstream build.
+f61571935b21d91b4affda1d6ddb4e1f0550bdf9d69ab0bc3d2506d23af34755  site/xlsx.mini.min.js

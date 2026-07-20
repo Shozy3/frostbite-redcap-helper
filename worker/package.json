@@ -1,0 +1,21 @@
+{
+  "name": "frostbite-redcap-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional Cloudflare Worker that bridges the Frostbite REDCap Helper's save code to REDCap's own Save & Return Later code.",
+  "license": "MIT",
+  "author": "Shahzaib Ahmed",
+  "contributors": [
+    "Shahzaib Ahmed",
+    "Haddeya Sultani"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node ../tools/test_bridge_lib.mjs"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.1.0"
+  }
+}

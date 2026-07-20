@@ -1,0 +1,11 @@
+{
+  // Cloudflare Pages config for the frostbite REDCap helper.
+  // `wrangler pages deploy --branch main` reads the output dir + binds KV (SAVES)
+  // to the Pages Functions in site/functions/ for the zero-knowledge save store.
+  "name": "frostbite-helper",
+  "pages_build_output_dir": "site",
+  "compatibility_date": "2024-11-01",
+  "kv_namespaces": [
+    { "binding": "SAVES", "id": "de8bbb8ad4984118a98349e50bd201be" }
+  ]
+}

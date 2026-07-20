@@ -1,0 +1,69 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // REDCap "Save & Return Later" bridge Worker (no REDCap API token; drives the
+  // public survey with Browser Rendering). Serves ONLY /api/code. Deployed on a
+  // route that overlaps the Pages site so the app can call it same-origin (keeps
+  // CSP connect-src 'self'); everything else on the domain is still served by the
+  // Pages project. See REDCAP_BRIDGE.md and DEPLOY.md.
+  "name": "frostbite-redcap-bridge",
+  "main": "index.js",
+  "compatibility_date": "2026-06-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Reachable ONLY via the custom-domain route below — NOT a *.workers.dev URL. This
+  // matters once Cloudflare Access fronts the custom hostname: a live workers.dev URL
+  // would be an unauthenticated back door around Access.
+  "workers_dev": false,
+
+  // Headless browser for driving the survey (Browser Rendering; free on Workers Free:
+  // 10 min/day, 3 concurrent browsers).
+  "browser": { "binding": "BROWSER" },
+
+  // Same KV namespace the Pages /api/save function uses, so the Worker's rc:<CODE>
+  // anchors let /api/save accept the app's encrypted blob under a REDCap code.
+  "kv_namespaces": [
+    { "binding": "SAVES", "id": "de8bbb8ad4984118a98349e50bd201be" }
+  ],
+
+  // Same-origin route: the Worker owns /api/code on the live domain; the Pages
+  // project keeps serving the site and /api/save. Set `zone_name` to your zone.
+  // Wildcard so query-string and trailing-slash variants also hit the Worker (an
+  // exact pattern lets redcaphelper.haddeya.com/api/code?code=... fall through to the
+  // Pages project). The handler still 404s anything whose path isn't exactly /api/code.
+  "routes": [
+    { "pattern": "redcaphelper.haddeya.com/api/code*", "zone_name": "haddeya.com" }
+  ],
+
+  "vars": {
+    // Public survey link the bridge drives. MUST match the app's DICT.post_action.
+    "SURVEY_URL": "https://redcap.ualberta.ca/surveys/?s=RLREFHHMMWXAEPJJ",
+    // How long an idle warm browser lingers for reuse (ms, 60000-600000). Short =
+    // fast bursts but low idle spend of the 10-min/day free budget.
+    "KEEPALIVE_MS": "60000",
+    // Round-trip integrity check after every save ("on"/"off"). Leave on.
+    "VERIFY_ROUNDTRIP": "on",
+    // Best-effort rate limits (defense-in-depth; NOT a substitute for Cloudflare Access):
+    // per-IP requests/minute and account-wide requests/day (caps browser-budget burn).
+    "RL_PER_MIN": "20",
+    "RL_PER_DAY": "400",
+    // Locked from the live probe (2026-07-08): the return code is the readonly input
+    // labelled by #return-step1 on REDCap's post-save confirmation. Its .value is the code.
+    "RETURN_CODE_SELECTOR": "input[aria-labelledby=\"return-step1\"]"
+    // No passphrase gate (owner's choice — codes ARE the mechanism, not secret). The
+    // gate code stays dormant in index.js: set GATE_SHA256 here to re-enable it later,
+    // or REQUIRE_CF_ACCESS=1 if you add Cloudflare Access. Rate limiting stays on.
+    // Optional (set via dashboard/secrets as needed):
+    //  "HTTP_DRIVER": "off"  — disable the pure-HTTP driver (httpbridge.js, the primary
+    //     path: plain fetch form-POSTs, no Browser Run budget) and force every request
+    //     onto the puppeteer fallback. Only for debugging REDCap markup drift.
+    //  "REQUIRE_CF_ACCESS": "1"  — reject requests lacking Cf-Access-Jwt-Assertion once
+    //     Cloudflare Access fronts this route (hard auth; strongly recommended for real use).
+    //  "RETURN_CODE_SELECTOR"        — CSS selector isolating the return code on the
+    //     post-save confirmation, if the text-proximity fallback is unreliable.
+    //  "RETURN_FORM_SELECTOR" / "RETURN_CODE_INPUT_SELECTOR" — override the resume
+    //     form / code-input selectors if this REDCap build differs from the defaults
+    //     (#return_code_form / input[name=__code]).
+    //  "PROBE": "1"  — enable the one-time live diagnostic (tools/probe_redcap_live.js); unset after.
+  }
+}

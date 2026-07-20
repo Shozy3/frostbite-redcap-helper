@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Frostbite REDCap Helper",
+  "version": "1.0.0",
+  "description": "Reorganizes the frostbite REDCap chart-audit survey into a cleaner, grouped, navigable workflow. Moves existing REDCap fields in-place. Does not store, clone, or transmit any data.",
+  "content_scripts": [
+    {
+      "matches": ["https://redcap.ualberta.ca/surveys/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

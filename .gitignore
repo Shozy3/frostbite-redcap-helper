@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Cloudflare local state / caches (these also hold a cached account id + owner email)
+.wrangler/
+**/.cache/
+
+# macOS cruft
+.DS_Store
+**/.DS_Store
+
+# Secrets / local-only material (never commit)
+.env
+.env.*
+*.pem
+*.key
+
+# Local-only security audit — contains a step-by-step exploit walkthrough of the live
+# system; kept out of the published repo by design.
+SECURITY_AUDIT.md
+
+# Logs / scratch
+*.log

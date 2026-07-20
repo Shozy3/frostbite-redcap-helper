@@ -1,0 +1,19 @@
+{
+  "name": "frostbite-helper-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build and test tooling for the Frostbite REDCap Helper (browser extension + Cloudflare Pages web app + save-code bridge).",
+  "license": "MIT",
+  "author": "Shahzaib Ahmed",
+  "contributors": [
+    "Shahzaib Ahmed",
+    "Haddeya Sultani"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shozy3/frostbite-redcap-helper.git"
+  },
+  "dependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
