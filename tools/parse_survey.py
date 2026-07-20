@@ -22,7 +22,7 @@ JSCODE = BL.get("jsCode", {})
 SURVEY_KEY = "RLREFHHMMWXAEPJJ"
 POST_ACTION = f"https://redcap.ualberta.ca/surveys/?s={SURVEY_KEY}"
 
-# 7-tab grouping copied verbatim from the extension's content.js TABS.
+# 7-tab grouping for the web app's Chart Audit (maps each REDCap field to a tab).
 TABS = [
   {"id":"patient","label":"Patient & Demographics",
    "fields":["study_number","date_of_birth","sex","weight","smoking_history","alcohol_use","substance_use_disorder","diabetes","pvd"]},
@@ -234,7 +234,7 @@ for f in fields:
         f["branch"] = None
 
 # ---------------------------------------------------------------------------
-# 5. Assign tab per field (explicit map, else inherit previous — like content.js)
+# 5. Assign tab per field (explicit map, else inherit the previous field's tab)
 # ---------------------------------------------------------------------------
 field2tab = {}; mtx2tab = {}
 for t in TABS:

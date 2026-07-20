@@ -11,63 +11,22 @@ this", see [DEPLOY.md](DEPLOY.md); for the save-code ↔ REDCap bridge, see
 
 ## 1. Overview
 
-The project is **two independent, complementary deployables plus an offline
-toolchain**, all serving one goal: get high-grade frostbite chart-audit data
-into REDCap faster and with fewer errors, without ever becoming a second
-system of record.
+The project is **a hosted web app plus an offline toolchain**, serving one goal:
+get high-grade frostbite chart-audit data into REDCap faster and with fewer
+errors, without ever becoming a second system of record.
 
-| Deployable | Where it runs | What it is |
+| Piece | Where it runs | What it is |
 |---|---|---|
-| **Browser extension** (`extension/`) | Chrome/Edge, on the live REDCap survey page | A Manifest V3 content script that reshapes the one long survey into 7 tabs *in place*. No network, no storage. |
-| **Web app** (`site/` + `functions/`, optionally `worker/`) | Cloudflare Pages, `redcaphelper.haddeya.com` | A static, client-side-only app offering the same chart audit as a clean standalone form, plus a Hennepin Score calculator and an Iloprost dose calculator, with an optional encrypted save/resume-by-code feature. |
+| **Web app** (`site/` + `functions/`, optionally `worker/`) | Cloudflare Pages, `redcaphelper.haddeya.com` | A static, client-side-only app offering the chart audit as a clean standalone form, plus a Hennepin Score calculator and an Iloprost dose calculator, with an optional encrypted save/resume-by-code feature. |
 | **Toolchain** (`tools/`) | Developer machine, offline | Python parsers that regenerate the web app's data dictionaries from a saved copy of the real REDCap survey HTML, and a hand-rolled Node/jsdom test suite. Not deployed. |
 
-Both deployables treat REDCap as the **sole system of record**. The extension
-never leaves the REDCap page; the web app's Chart Audit tool only ever
-*prepares* a submission that a human reviews and submits inside REDCap itself.
+The web app treats REDCap as the **sole system of record**: its Chart Audit tool
+only ever *prepares* a submission that a human then reviews and submits inside
+REDCap itself.
 
 ## 2. Components
 
-### 2.1 Browser extension — `extension/`
-
-```
-extension/manifest.json   MV3 manifest, scoped to https://redcap.ualberta.ca/surveys/*
-extension/content.js      all logic (~750 lines)
-extension/styles.css      scoped styling for the injected UI
-```
-
-`content.js` waits for the survey's question table to render, then:
-
-- **Groups by real field name into 7 tabs** — Patient & Demographics;
-  Presentation & Assessment; Frostbite Grading; Amputation; Medications;
-  Imaging & Consults; Disposition & Follow-up — because the survey's own
-  section headers are misleading (most treatment/med/imaging/follow-up
-  fields are mislabeled under a single heading).
-- **Never moves, clones, or reparents a REDCap DOM node.** Every row stays
-  exactly where REDCap rendered it, inside `#questiontable`, in original
-  order. A tab switch is purely `classList.toggle('fbh-tab-hidden', …)` on
-  existing rows. Because nothing is restructured, REDCap's own branching
-  logic and validation keep running underneath, unaffected.
-- Adds a **live required-fields progress bar** and per-tab completion
-  badges, computed by reading (never writing) form values and REDCap's own
-  branch-driven visibility.
-- Adds a **"Review missing" jump list** that switches tab, scrolls, and
-  briefly highlights a blank required field.
-- **Pre-fills a few date/datetime fields** (`date_of_birth`,
-  `time_of_ed_arrival`, `md_assessment_time`, `rewarming_time`) with today's
-  day/month and a sentinel year, but only when the field is still empty, and
-  fires the same `input`/`change`/`blur` events a real keystroke would —
-  REDCap validates the value exactly as if the user had typed it.
-- Detects the wrong page or too few fields and does nothing (with a small
-  on-page notice); any runtime error triggers a self-cleanup that strips its
-  own classes/DOM and leaves the form exactly as REDCap rendered it.
-
-By design it makes **no network calls** (no `fetch`/`XMLHttpRequest`/
-`sendBeacon`/`WebSocket`) and uses **no storage** (no `localStorage`,
-`sessionStorage`, `IndexedDB`, or cookies) — see the DevTools checklist in
-[TESTING.md](TESTING.md).
-
-### 2.2 Web app — `site/`
+### 2.1 Web app — `site/`
 
 A hand-written, dependency-free, no-build static site. `site/index.html`
 loads a fixed sequence of plain `<script>` tags (no bundler, no framework);
@@ -81,7 +40,7 @@ same code.
 | `branch.js` | A small, `eval`-free tree evaluator that mirrors REDCap's own branching logic (`and`/`or` of `eq`/`ne`/`nonempty`/`checked` leaves), so the rendered form shows/hides fields exactly like the real survey. |
 | `payload.js` | `buildPayload()` turns the in-browser form state into the exact `name=value` pairs REDCap's own prefill mechanism expects (dates converted to `YYYY-MM-DD`, checkboxes exploded to `var___code=1`); only fields currently visible under branching are sent. Also builds the "complete visible-field intent" used by the optional bridge's verify step. |
 | `datemask.js` | A typed `DD-MM-YYYY` (and `DD-MM-YYYY HH:MM`) input mask — chosen over native date/datetime inputs after a segmented-input year-entry bug — with pure, Node-tested formatting logic. |
-| `cryptosave.js` | Client-side AES-GCM-256 encryption for the save/resume-by-code feature (see §3.3). |
+| `cryptosave.js` | Client-side AES-GCM-256 encryption for the save/resume-by-code feature (see §3.2). |
 | `export.js` | Renders the current form as a readable CSV or XLSX (decoded option labels, one row per field); the XLSX path lazy-loads a self-hosted SheetJS build (`xlsx.mini.min.js`) so the strict CSP never needs a CDN. |
 | `dictionary.js` / `dictionary.json` | The Chart Audit's generated data dictionary (fields, types, options, validation, branching trees, the 7-tab grouping) — regenerated by `tools/parse_survey.py`, never hand-edited. |
 | `dict_hhr.js`, `hhr_calc.js`, `hhr_maps.js`, `hhr.js` | The Hennepin Score Calculator: its data dictionary, REDCap's own scoring equations baked in **verbatim** (not re-derived) so the score is provably identical to the original, the clickable-diagram polygon geometry, and the interactive UI (five anatomical figures under `site/hhr/img/`) — all regenerated by `tools/parse_hhr.py`. |
@@ -93,7 +52,7 @@ same code.
 REDCap origins), duplicated as HTTP headers in `site/_headers` for
 Cloudflare Pages.
 
-### 2.3 Pages Function — `functions/api/save.js`
+### 2.2 Pages Function — `functions/api/save.js`
 
 The web app's only backend: a single Cloudflare Pages Function bound to a
 Workers KV namespace (`SAVES`). It stores and serves **ciphertext only** —
@@ -110,7 +69,7 @@ Records have no TTL — a save persists until the user deletes it. Overwrite
 and delete both require presenting the matching `dtok`, so possession of a
 bare id alone cannot clobber or erase someone else's record.
 
-### 2.4 Optional Worker bridge — `worker/`
+### 2.3 Optional Worker bridge — `worker/`
 
 A **separate, optional** Cloudflare Worker that is not required for the app
 to function. When deployed on a route that overlaps the Pages site (so calls
@@ -132,7 +91,7 @@ what was sent. If the Worker isn't deployed, the app silently falls back to
 a random app-only code; nothing else breaks. Full trust model in
 [REDCAP_BRIDGE.md](REDCAP_BRIDGE.md).
 
-### 2.5 Toolchain — `tools/`
+### 2.4 Toolchain — `tools/`
 
 Not deployed; run by a developer when the source REDCap surveys change or
 before a release.
@@ -148,29 +107,17 @@ before a release.
   `<map>` geometry into `site/hhr_maps.js`.
 - `test_*.js` / `test_*.mjs` — a hand-rolled Node assertion suite (no test
   framework) plus jsdom-backed UI tests, covering branching, date masking,
-  the export/Hennepin (HHR)/Iloprost calculators, the encryption round-trip, the save
-  API, and the bridge's pure logic. A representative run order is documented
-  in [DEPLOY.md](DEPLOY.md).
+  the export/Hennepin (HHR)/Iloprost calculators, the encryption round-trip,
+  the save API, and the bridge's pure logic. See [TESTING.md](TESTING.md).
 - `hash.js` is a one-line helper to produce the SHA-256 of a new access
   passphrase for `site/config.js`.
 
 ## 3. Data flow
 
-There are three independent ways data moves in this project — the extension
-never leaves the page; the web app either posts a prefill to REDCap or
-stores an encrypted save.
+There are two ways data moves in this project — the web app either posts a
+prefill to REDCap, or stores an encrypted save.
 
-### 3.1 Extension, in place
-
-```
-REDCap survey page  ──(read DOM, toggle CSS classes only)──▶  same page
-```
-
-No request ever leaves the browser. The extension only reads field values
-and visibility to compute progress, and only toggles a CSS class on rows it
-never moved.
-
-### 3.2 Web app → REDCap prefill
+### 3.1 Web app → REDCap prefill
 
 ```
 Chart Audit tool  ──POST __prefill + field values──▶  redcap.ualberta.ca survey (new tab)
@@ -187,7 +134,7 @@ into a Chart Audit field first ("Use score" / "Use dose in Chart Audit"),
 and only the Chart Audit's own "Open populated REDCap form for review"
 button posts.
 
-### 3.3 Save & resume by code
+### 3.2 Save & resume by code
 
 **Zero-knowledge path (always available):**
 
@@ -258,66 +205,7 @@ Worker** alongside it:
 
 ## 5. Component diagram
 
-```mermaid
-flowchart LR
-  subgraph EXT["Browser Extension — extension/"]
-    CS["content.js<br/>in-place DOM re-tab, progress bar,<br/>review-missing, date pre-fill"]
-  end
-
-  subgraph WEBAPP["Web App — user's browser"]
-    UI["index.html + app.js<br/>Chart Audit / Hennepin / Iloprost switcher"]
-    BR["branch.js"]
-    PL["payload.js"]
-    CR["cryptosave.js"]
-    EX["export.js"]
-    HH["hhr.js + hhr_calc.js"]
-    IL["ilop.js"]
-    UI --- BR
-    UI --- PL
-    UI --- CR
-    UI --- EX
-    UI --- HH
-    UI --- IL
-  end
-
-  RCF["REDCap frostbite survey<br/>redcap.ualberta.ca/surveys/*"]
-  RHR["REDCap Hennepin survey<br/>redcap.hhrinstitute.org"]
-
-  CS -. "reads / toggles CSS classes only<br/>(no network, no storage)" .- RCF
-
-  UI -- "POST prefill, new tab<br/>(human reviews & submits)" --> RCF
-  UI -- "POST prefill, new tab" --> RHR
-
-  subgraph PAGES["Cloudflare Pages — redcaphelper.haddeya.com"]
-    STATIC["site/ static assets"]
-    FN["functions/api/save.js<br/>Pages Function"]
-  end
-
-  UI -- "save/resume/delete<br/>{ct, iv, dtok} — ciphertext only" --> FN
-  FN --- KV[("Workers KV<br/>SAVES namespace")]
-
-  subgraph WORKER["Optional Worker bridge — worker/ (route-overlapped, same origin)"]
-    IDX["index.js — /api/code<br/>(passphrase-gated, rate-limited)"]
-    HB["httpbridge.js<br/>primary: pure HTTP driver"]
-    LIB["lib.js<br/>validation + verify diff"]
-    IDX --- HB
-    IDX --- LIB
-  end
-
-  UI -. "only if deployed:<br/>plaintext chart values" .-> IDX
-  IDX -- "drives the survey<br/>like a person would" --> RCF
-  IDX -- "anchors rc:&lt;CODE&gt;" --> KV
-
-  subgraph TOOLS["tools/ — offline, not deployed"]
-    PS["parse_survey.py"]
-    PH["parse_hhr.py"]
-    T["test_*.js / *.mjs"]
-  end
-
-  PS -. "regenerates" .-> STATIC
-  PH -. "regenerates" .-> STATIC
-  T -. "exercises" .-> STATIC
-```
+![Architecture of the Frostbite REDCap Helper](images/architecture.png)
 
 ## 6. Security notes
 
@@ -327,5 +215,4 @@ receives and stores ciphertext it has no way to decrypt. The access
 passphrase in front of the web app is a soft UI gate, not a cryptographic
 key and not real access control — it does not protect saved data, and a
 deployment that needs stronger access control should put the site behind
-Cloudflare Access. The browser extension makes no network requests and uses
-no storage of any kind, so it has no data-handling surface to secure at all.
+Cloudflare Access.

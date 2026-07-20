@@ -2,7 +2,7 @@
   "name": "frostbite-helper-tools",
   "version": "1.0.0",
   "private": true,
-  "description": "Build and test tooling for the Frostbite REDCap Helper (browser extension + Cloudflare Pages web app + save-code bridge).",
+  "description": "Build and test tooling for the Frostbite REDCap Helper (Cloudflare Pages web app + save-code bridge).",
   "license": "MIT",
   "author": "Haddeya Sultani",
   "contributors": [

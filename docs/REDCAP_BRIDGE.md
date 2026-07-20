@@ -93,8 +93,8 @@ Other mitigating facts:
   caller holds the record's key — so a bare code (or a leaked id on its own) can neither
   delete nor clobber a saved blob.
 
-The browser extension (`content.js`) is **unchanged** and still makes no network
-requests — the bridge is entirely server-side.
+The bridge is **entirely server-side** — the web app calls it same-origin, so no
+client-side or CSP changes are needed to use it.
 
 ## Integrity — every save is verified
 

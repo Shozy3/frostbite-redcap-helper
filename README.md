@@ -7,7 +7,7 @@
 [![Cloudflare Pages](https://img.shields.io/badge/Runs%20on-Cloudflare%20Pages-F38020.svg)](https://redcaphelper.haddeya.com)
 [![No build step](https://img.shields.io/badge/Build%20step-none-brightgreen.svg)](#tech-stack)
 
-**Frostbite REDCap Helper** is a hosted, entirely client-side web app — live at **[redcaphelper.haddeya.com](https://redcaphelper.haddeya.com)** — that helps clinicians and research staff enter high-grade frostbite chart-audit data into [REDCap](https://www.project-redcap.org/) faster and with fewer missed fields. There is nothing to install: you open the page and start entering. It bundles three purpose-built tools plus an encrypted save/resume feature, and hands off to the real REDCap survey for final review and submission. An optional browser extension is also included for teams who prefer to work directly on the live REDCap survey page.
+**Frostbite REDCap Helper** is a hosted, entirely client-side web app — live at **[redcaphelper.haddeya.com](https://redcaphelper.haddeya.com)** — that helps clinicians and research staff enter high-grade frostbite chart-audit data into [REDCap](https://www.project-redcap.org/) faster and with fewer missed fields. There is nothing to install: you open the page and start entering. It bundles three purpose-built tools plus an encrypted save/resume feature, and hands off to the real REDCap survey for final review and submission.
 
 ![Frostbite Chart Audit](docs/images/02-chart-audit.png)
 
@@ -35,12 +35,9 @@
 
 When you're done, the app opens the **real REDCap survey pre-populated** in a new tab so a human reviews and submits it there. REDCap remains the system of record, and its own branching logic and validation always run.
 
-<details>
-<summary><b>Optional:</b> browser extension (advanced)</summary>
+### The user's journey
 
-For teams that prefer to work directly on the live REDCap survey page, the repo also includes a Manifest V3 browser extension (in [`extension/`](extension)) that reshapes the survey **in place** into the same 7 tabs, without moving or altering any REDCap field. It makes no network calls and stores nothing. It is entirely optional and separate from the hosted app — see [extension/README.md](extension/README.md) to load it.
-
-</details>
+![How a clinician moves through the tool, from opening the app to submitting in REDCap](docs/images/user-workflow.png)
 
 ## Features
 
@@ -95,35 +92,11 @@ The access-passphrase gate shown above is a soft UI convenience (and doubles as 
 - The web app **only ever uploads ciphertext it cannot read**, and only when you choose to save; it never submits to REDCap on your behalf — you always review and submit in REDCap yourself.
 - Saved records are encrypted client-side with a **random per-record key** that lives only inside the save code.
 - REDCap remains the **system of record**, and its own branching logic and validation always run.
-- The optional browser extension makes **no network calls**, stores **nothing** (no `localStorage`, `sessionStorage`, or cookies), and never moves, clones, or overwrites a REDCap field — it only reshapes layout and adds UI on top.
+- Everything runs client-side in your browser; the only thing ever sent to our server is opaque ciphertext, and only when you choose to save.
 
 ## Architecture at a glance
 
-```mermaid
-flowchart LR
-    C["Clinician / research staff"]
-
-    subgraph APP["Web App (site/) — the product"]
-        A["Chart Audit · Hennepin Score · Iloprost<br/>(redcaphelper.haddeya.com)"]
-    end
-
-    subgraph EXT["Optional Browser Extension (extension/)"]
-        E["Reshapes the live REDCap survey in place<br/>7 tabs · progress bar · Review missing"]
-    end
-
-    R["Real REDCap survey<br/>redcap.ualberta.ca"]
-    SAVE["/api/save<br/>Pages Function"]
-    KV["Workers KV<br/>(ciphertext only)"]
-    BRIDGE["Optional /api/code<br/>Worker bridge"]
-    RETURN["REDCap Save & Return Later"]
-
-    C --> A
-    A -- "opens pre-populated survey" --> R
-    A -- "encrypted save/resume" --> SAVE --> KV
-    A -. "optional" .-> BRIDGE --> RETURN
-    C -. "optional" .-> E
-    E -.-> R
-```
+![Architecture of the Frostbite REDCap Helper: the browser-based web app talks to a Cloudflare Pages Function that stores only ciphertext in Workers KV, opens the pre-populated REDCap survey, and optionally uses a bridge Worker for REDCap's own return codes](docs/images/architecture.png)
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the detailed breakdown.
 
@@ -134,7 +107,6 @@ README.md  LICENSE  package.json  package-lock.json  wrangler.jsonc
 site/       -> the web app (index.html, app.js, and modules; hhr/ figures)  ← the product
 functions/  -> functions/api/save.js (Pages Function, the encrypted blob store)
 worker/     -> optional Cloudflare Worker save-code bridge
-extension/  -> optional browser extension (manifest.json, content.js, styles.css)
 tools/      -> Python parsers + Node/jsdom test suite
 docs/       -> ARCHITECTURE.md, DEPLOY.md, REDCAP_BRIDGE.md, TESTING.md, HHR_SPEC.md, images/
 ```
@@ -152,8 +124,6 @@ python3 -m http.server --directory site
 ```
 
 **Deploying?** See [docs/DEPLOY.md](docs/DEPLOY.md) for the full Cloudflare Pages + Functions + Workers KV deployment chain, including the optional save-code bridge Worker.
-
-**Using the optional extension?** Open your browser's extensions page, enable Developer mode, and *Load unpacked* → the `extension/` folder. See [extension/README.md](extension/README.md).
 
 ## Testing
 
@@ -186,7 +156,6 @@ See [docs/TESTING.md](docs/TESTING.md) for the full list and what each suite cov
 - An optional **Cloudflare Worker** save-code bridge (pure-HTTP driver, with a Puppeteer/Browser Rendering fallback)
 - **Python** parsers (`tools/parse_survey.py`, `tools/parse_hhr.py`) that regenerate the data dictionaries and calculator logic from saved REDCap survey HTML
 - A hand-rolled **Node** assertion test suite plus **jsdom** UI tests (`node tools/test_*.js`)
-- An optional Manifest V3 **browser extension** (vanilla JS content script)
 
 ## Authors
 
